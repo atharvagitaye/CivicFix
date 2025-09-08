@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
-  Table, TableHead, TableRow, TableCell, TableBody
+  Table, TableRow, TableCell, TableBody
 } from "@/components/ui/table"
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip
