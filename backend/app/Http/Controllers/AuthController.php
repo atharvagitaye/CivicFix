@@ -11,9 +11,9 @@ class AuthController extends Controller
 {
     public function register(Request $request) {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6|confirmed',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6',
         ]);
 
         $user = User::create([
@@ -22,16 +22,20 @@ class AuthController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
-            'message' => 'User registered successfully'
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
         ], 201);
     }
 
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => 'required|string|email',
+            'password' => 'required|string',
         ]);
 
         $user = User::where('email', $request->email)->first();
@@ -42,11 +46,12 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login successful',
-            'token'   => $token
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
         ], 200);
     }
 }
