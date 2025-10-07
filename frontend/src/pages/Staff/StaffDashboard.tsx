@@ -20,12 +20,14 @@ const StaffDashboard: React.FC = () => {
       try {
         const profileRes = await fetch(`${API_BASE}/user/profile`, {
           headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
         });
         const staffData = await profileRes.json();
         setStaff(staffData);
 
         const issuesRes = await fetch(`${API_BASE}/issues?user_id=${staffData.id}`, {
           headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
         });
         const issuesData = await issuesRes.json();
         setAssignedIssues(issuesData.data || issuesData);
@@ -48,6 +50,7 @@ const StaffDashboard: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
         body: JSON.stringify({ status }),
       });
 

@@ -12,6 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+        
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+        
         $middleware->alias([
             'staff_or_admin' => \App\Http\Middleware\StaffOrAdmin::class,
         ]);
