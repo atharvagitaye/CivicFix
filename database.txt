@@ -1,0 +1,102 @@
+// Define Users table
+Table users {
+  id int [pk, increment] // Primary key for the user
+  name varchar(255)
+  email varchar(255) [unique]
+  password varchar(255)
+  created_at timestamp
+  updated_at timestamp
+}
+
+// Define Admins table
+Table admins {
+  id int [pk, increment] // Primary key for admin
+  user_id int [ref: > users.id] // Foreign key to the user table (user becomes admin)
+  created_at timestamp
+  updated_at timestamp
+}
+
+// Define Staff table
+Table staff {
+  id int [pk, increment] // Primary key for staff
+  user_id int [ref: > users.id] // Foreign key to the user table (user becomes staff)
+  created_at timestamp
+  updated_at timestamp
+}
+
+// Define Categories table
+Table categories {
+  id int [pk, increment]
+  name varchar(255) [unique]
+  description text
+}
+
+// Define Sub-Categories table
+Table sub_categories {
+  id int [pk, increment]
+  category_id int [ref: > categories.id] // Foreign key to category
+  name varchar(255) [unique]
+  description text
+}
+
+// Define Issues table
+Table issues {
+  id int [pk, increment] // Primary key for the issue
+  title varchar(255)
+  description text
+  reported_by int [ref: > users.id] // Foreign key to the user who reported the issue
+  assigned_to int [ref: > staff.id, null] // Foreign key to the staff member assigned (nullable)
+  category_id int [ref: > categories.id] // Foreign key to the issue category
+  sub_category_id int [ref: > sub_categories.id] // Foreign key to the sub-category of the issue
+  status_id int [ref: > statuses.id] // Foreign key to the issue status
+  priority varchar(50) // E.g., Low, Medium, High
+  location_lat float // Latitude of the issue location
+  location_lng float // Longitude of the issue location
+  created_at timestamp
+  updated_at timestamp
+}
+
+// Define Statuses table
+Table statuses {
+  id int [pk, increment]
+  name varchar(50) [unique] // E.g., 'Open', 'In Progress', 'Closed'
+  description text
+}
+
+// Define table to track the allotment of issues to staff
+Table issue_assignments {
+  id int [pk, increment]
+  issue_id int [ref: > issues.id]
+  staff_id int [ref: > staff.id] // The staff member assigned to the issue
+  assigned_by int [ref: > admins.id] // Admin who assigned the issue
+  assigned_at timestamp
+  completed_at timestamp [null] // Timestamp when the issue is marked as completed
+}
+
+// Define table to log updates on issues (staff can update status)
+Table issue_updates {
+  id int [pk, increment]
+  issue_id int [ref: > issues.id]
+  updated_by int [ref: > staff.id] // Staff member who updated the issue
+  status_id int [ref: > statuses.id] // New status
+  update_description text // Description of the update
+  updated_at timestamp
+}
+
+// Define table to store media (photos) for issues
+Table issue_media {
+  id int [pk, increment]
+  issue_id int [ref: > issues.id] // Foreign key to the related issue
+  media_type varchar(50) // Type of media (e.g., 'photo')
+  media_url varchar(255) // URL or path to the media (photo file)
+  created_at timestamp
+}
+
+// Table to store password reset requests
+Table password_resets {
+  id int [pk, increment]
+  user_id int [ref: > users.id] // Foreign key to the user who requested the reset
+  reset_token varchar(255) // Token generated for password reset
+  token_expiry timestamp // Expiry time for the reset token
+  created_at timestamp // When the request was made
+}
