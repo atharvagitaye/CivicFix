@@ -66,7 +66,12 @@
                                 @endif
                             @endif
                             <br>
-                            <strong>Location:</strong> {{ $issue->location_lat }}, {{ $issue->location_lng }}<br>
+                            <strong>Location:</strong>
+                            @if($issue->latitude && $issue->longitude)
+                                {{ $issue->latitude }}, {{ $issue->longitude }}<br>
+                            @else
+                                <span class="text-muted">Location not specified</span><br>
+                            @endif
                             <strong>Priority:</strong> {{ $issue->priority }}
                         </div>
                     </div>
@@ -80,11 +85,15 @@
                     <h5>Location</h5>
                     <div class="bg-light p-3 rounded mb-4 text-center">
                         <i class="bi bi-geo-alt fs-1 text-muted"></i>
-                        <p class="mb-0">Latitude: {{ $issue->location_lat }}, Longitude: {{ $issue->location_lng }}</p>
-                        <a href="https://www.google.com/maps?q={{ $issue->location_lat }},{{ $issue->location_lng }}" 
-                           target="_blank" class="btn btn-outline-primary btn-sm mt-2">
-                            <i class="bi bi-map"></i> View on Google Maps
-                        </a>
+                        @if($issue->latitude && $issue->longitude)
+                            <p class="mb-0">Latitude: {{ $issue->latitude }}, Longitude: {{ $issue->longitude }}</p>
+                            <a href="https://www.google.com/maps?q={{ $issue->latitude }},{{ $issue->longitude }}" 
+                               target="_blank" class="btn btn-outline-primary btn-sm mt-2">
+                                <i class="bi bi-map"></i> View on Google Maps
+                            </a>
+                        @else
+                            <p class="mb-0 text-muted">Location coordinates are not available.</p>
+                        @endif
                     </div>
 
                     <!-- Media Files -->
@@ -244,7 +253,28 @@
                                             {{ ucwords(str_replace('_', ' ', $update->status)) }}
                                         </span>
                                     </div>
-                                    <p class="mt-2 mb-0">{{ $update->update_description }}</p>
+                                    @php
+                                        // If update_description contains JSON, decode and pretty print
+                                        $decoded = null;
+                                        if (!empty($update->update_description) && is_string($update->update_description)) {
+                                            $maybe = json_decode($update->update_description, true);
+                                            if (json_last_error() === JSON_ERROR_NONE) {
+                                                $decoded = $maybe;
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if($decoded)
+                                        <div class="mt-2 mb-0">
+                                            @if(isset($decoded['notes']))
+                                                <p>{{ $decoded['notes'] }}</p>
+                                            @else
+                                                <pre class="mb-0">{{ json_encode($decoded, JSON_PRETTY_PRINT) }}</pre>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <p class="mt-2 mb-0">{{ $update->update_description }}</p>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
