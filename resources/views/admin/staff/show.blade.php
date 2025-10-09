@@ -7,9 +7,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-person-badge"></i> Staff Details: {{ $staff->user->name }}</h2>
         <div class="btn-group">
-            <a href="{{ route('admin.staff.edit', $staff) }}" class="btn btn-outline-warning">
-                <i class="bi bi-pencil"></i> Edit
-            </a>
             <a href="{{ route('admin.staff.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Staff
             </a>
@@ -64,19 +61,7 @@
                         </tr>
                     </table>
 
-                    @if($staff->address)
-                        <div class="mt-3">
-                            <strong>Address:</strong>
-                            <p class="text-muted">{{ $staff->address }}</p>
-                        </div>
-                    @endif
-
-                    @if($staff->bio)
-                        <div class="mt-3">
-                            <strong>Bio / Notes:</strong>
-                            <p class="text-muted">{{ $staff->bio }}</p>
-                        </div>
-                    @endif
+                    <!-- Address and bio fields are not stored on staff in current schema -->
                 </div>
             </div>
         </div>

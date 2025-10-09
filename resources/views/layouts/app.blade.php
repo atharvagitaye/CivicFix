@@ -12,6 +12,9 @@
     
     <!-- Custom CSS -->
     <style>
+        body {
+            padding-top: 70px; /* Account for fixed navbar */
+        }
         .navbar-brand {
             font-weight: bold;
             color: #2c3e50 !important;
@@ -131,7 +134,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container-fluid" style="margin-top: 56px;">
+    <div class="container-fluid">
         @yield('content')
     </div>
 

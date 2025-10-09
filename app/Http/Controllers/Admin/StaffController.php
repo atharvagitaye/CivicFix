@@ -102,62 +102,6 @@ class StaffController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Staff $staff)
-    {
-        $staff->load('user');
-        return view('admin.staff.edit', compact('staff'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Staff $staff)
-    {
-        $staff->load('user');
-        
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $staff->user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:255',
-            'department' => 'nullable|string|max:255',
-            'employee_id' => 'nullable|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        DB::transaction(function () use ($request, $staff) {
-            // Update user information
-            $updateData = [
-                'name' => $request->name,
-                'email' => $request->email,
-            ];
-
-            if ($request->filled('password')) {
-                $updateData['password'] = Hash::make($request->password);
-            }
-
-            $staff->user->update($updateData);
-
-            // Update staff information
-            $staff->update([
-                'phone' => $request->phone,
-                'department' => $request->department,
-                'employee_id' => $request->employee_id,
-            ]);
-        });
-
-        return redirect()->route('admin.staff.index')
-            ->with('success', 'Staff member updated successfully!');
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Staff $staff)

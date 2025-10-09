@@ -12,6 +12,8 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\IssueUpdate;
+use App\Models\Status as StatusModel;
 
 class AdminController extends Controller
 {
@@ -205,5 +207,68 @@ class AdminController extends Controller
         $staffMembers = Staff::with('user')->get();
 
         return view('admin.issues.index', compact('issues', 'categories', 'staffMembers'));
+    }
+
+    /**
+     * Update issue status (AJAX)
+     */
+    public function updateStatus(Request $request, Issue $issue)
+    {
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'status' => 'required|string|in:submitted,in_progress,resolved,closed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Invalid status provided.'], 422);
+        }
+
+        $newStatus = $data['status'];
+
+        try {
+            // Update the issue's status (issues table stores status as string)
+            $issue->status = $newStatus;
+            $issue->save();
+
+            // Map string status to status_id for issue_updates table if possible
+            $statusId = null;
+            $statusModel = StatusModel::where('name', $newStatus)->first();
+            if ($statusModel) {
+                $statusId = $statusModel->id;
+            } else {
+                // fallback mapping based on common ids (best-effort)
+                $map = [
+                    'submitted' => 1,
+                    'in_progress' => 2,
+                    'resolved' => 3,
+                    'closed' => 3,
+                ];
+                $statusId = $map[$newStatus] ?? null;
+            }
+
+            // Create an IssueUpdate record for history (if table exists)
+            try {
+                IssueUpdate::create([
+                    'issue_id' => $issue->id,
+                    'status_id' => $statusId,
+                    'update_description' => json_encode(['notes' => 'Status updated by admin', 'status' => $newStatus]),
+                ]);
+            } catch (\Exception $e) {
+                // ignore create failures for issue_updates to avoid breaking the admin flow
+            }
+
+            return response()->json(['success' => true, 'message' => 'Status updated successfully.']);
+        } catch (\Exception $e) {
+            // Log the exception for debugging
+            report($e);
+
+            $message = 'Failed to update status. Please try again.';
+            if (config('app.debug')) {
+                $message = $e->getMessage();
+            }
+
+            return response()->json(['success' => false, 'message' => $message], 500);
+        }
     }
 }

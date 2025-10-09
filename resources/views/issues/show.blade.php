@@ -227,7 +227,7 @@
             @endif
 
             <!-- Issue Updates -->
-            <div class="card">
+            <!-- <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="bi bi-clock-history"></i> Update History
@@ -243,33 +243,108 @@
                                             <strong>{{ $update->staff->user->name }}</strong>
                                             <small class="text-muted d-block">{{ $update->created_at->format('M d, Y \a\t g:i A') }}</small>
                                         </div>
+                                        @php
+                                            // Normalize status which might be a plain string or a JSON-encoded object
+                                            $statusRaw = $update->status;
+                                            $statusLabel = null;
+                                            $statusKey = null;
+
+                                            if (!empty($statusRaw) && is_string($statusRaw)) {
+                                                $maybeStatus = json_decode($statusRaw, true);
+                                                if (json_last_error() === JSON_ERROR_NONE && is_array($maybeStatus)) {
+                                                    // prefer 'name' if present
+                                                    if (isset($maybeStatus['name'])) {
+                                                        $statusLabel = $maybeStatus['name'];
+                                                        $statusKey = strtolower(str_replace(' ', '_', $statusLabel));
+                                                    } elseif (isset($maybeStatus['status'])) {
+                                                        $statusLabel = $maybeStatus['status'];
+                                                        $statusKey = strtolower(str_replace(' ', '_', $statusLabel));
+                                                    }
+                                                }
+                                            }
+
+                                            if (!$statusLabel) {
+                                                // fallback to existing plain string handling
+                                                $statusLabel = $statusRaw;
+                                                $statusKey = is_string($statusRaw) ? $statusRaw : null;
+                                            }
+
+                                            // Ensure we have a display label
+                                            $displayLabel = $statusLabel ? ucwords(str_replace('_', ' ', $statusLabel)) : 'Unknown';
+                                        @endphp
+
                                         <span class="badge 
-                                            @if($update->status === 'submitted') bg-info
-                                            @elseif($update->status === 'in_progress') bg-warning
-                                            @elseif($update->status === 'resolved') bg-success
-                                            @elseif($update->status === 'closed') bg-secondary
+                                            @if($statusKey === 'submitted') bg-info
+                                            @elseif($statusKey === 'in_progress') bg-warning
+                                            @elseif($statusKey === 'resolved') bg-success
+                                            @elseif($statusKey === 'closed') bg-secondary
                                             @else bg-secondary
                                             @endif">
-                                            {{ ucwords(str_replace('_', ' ', $update->status)) }}
+                                            {{ $displayLabel }}
                                         </span>
                                     </div>
                                     @php
-                                        // If update_description contains JSON, decode and pretty print
+                                        // Robust JSON decoding: handle double-encoded JSON and various shapes
                                         $decoded = null;
-                                        if (!empty($update->update_description) && is_string($update->update_description)) {
-                                            $maybe = json_decode($update->update_description, true);
+                                        $raw = $update->update_description;
+
+                                        if (!empty($raw) && is_string($raw)) {
+                                            $maybe = json_decode($raw, true);
                                             if (json_last_error() === JSON_ERROR_NONE) {
                                                 $decoded = $maybe;
+                                                // handle double-encoded values (strings that are JSON themselves)
+                                                if (is_string($decoded)) {
+                                                    $inner = json_decode($decoded, true);
+                                                    if (json_last_error() === JSON_ERROR_NONE) {
+                                                        $decoded = $inner;
+                                                    }
+                                                }
                                             }
                                         }
+
+                                        // Helper to detect associative arrays
+                                        $isAssoc = function($arr) {
+                                            if (!is_array($arr)) return false;
+                                            return array_keys($arr) !== range(0, count($arr) - 1);
+                                        };
                                     @endphp
 
                                     @if($decoded)
                                         <div class="mt-2 mb-0">
-                                            @if(isset($decoded['notes']))
+                                            @if(is_array($decoded) && isset($decoded['notes']))
                                                 <p>{{ $decoded['notes'] }}</p>
+                                            @elseif(is_array($decoded) && isset($decoded['name']))
+                                                <p><strong>Status changed to:</strong> {{ $decoded['name'] }}</p>
+                                                @if(!empty($decoded['description']))
+                                                    <p class="text-muted small">{{ $decoded['description'] }}</p>
+                                                @endif
+                                            @elseif(is_array($decoded) && $isAssoc($decoded))
+                                                <div class="alert alert-info small mb-0">
+                                                    @foreach($decoded as $key => $value)
+                                                        @if(is_scalar($value))
+                                                            <strong>{{ ucwords(str_replace(['_', "\n"], [' ', ' '], $key)) }}:</strong> {{ $value }}<br>
+                                                        @elseif(is_array($value))
+                                                            <strong>{{ ucwords(str_replace(['_', "\n"], [' ', ' '], $key)) }}:</strong>
+                                                            <pre class="mb-0 small">{{ json_encode($value, JSON_PRETTY_PRINT) }}</pre>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                            @elseif(is_array($decoded))
+                                                {{-- indexed array - list items --}}
+                                                <ul class="small mb-0">
+                                                    @foreach($decoded as $item)
+                                                        <li>
+                                                            @if(is_scalar($item))
+                                                                {{ $item }}
+                                                            @else
+                                                                <pre class="mb-0 small">{{ json_encode($item, JSON_PRETTY_PRINT) }}</pre>
+                                                            @endif
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
                                             @else
-                                                <pre class="mb-0">{{ json_encode($decoded, JSON_PRETTY_PRINT) }}</pre>
+                                                {{-- fallback: pretty-print whatever we decoded --}}
+                                                <pre class="mb-0 small">{{ json_encode($decoded, JSON_PRETTY_PRINT) }}</pre>
                                             @endif
                                         </div>
                                     @else
@@ -285,7 +360,7 @@
                         </div>
                     @endif
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>

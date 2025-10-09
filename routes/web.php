@@ -12,11 +12,10 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Staff\StaffController as StaffStaffController;
+use App\Http\Controllers\HomeController;
 
 // Public routes
-Route::get('/', function () {
-    return redirect('/login');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Authentication routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -54,6 +53,8 @@ Route::middleware(['auth'])->group(function () {
         // Issue assignment routes
         Route::get('/issues/{issue}/assign', [AdminController::class, 'assignIssue'])->name('issues.assign');
         Route::post('/issues/{issue}/assign', [AdminController::class, 'storeAssignment'])->name('issues.assign.store');
+    // Status update (AJAX) - allow admins to update issue status
+    Route::put('/issues/{issue}/status', [AdminController::class, 'updateStatus'])->name('issues.status.update');
         
         // User promotion routes
         Route::post('/users/promote-admin', [AdminController::class, 'promoteToAdmin'])->name('users.promote.admin');
@@ -67,7 +68,11 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/categories/{category}/sub-categories/{subCategory}', [CategoryController::class, 'destroySubCategory'])->name('categories.sub-categories.destroy');
         
         // Staff management routes
-        Route::resource('staff', StaffController::class);
+        Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
+        Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');
+        Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
+        Route::get('/staff/{staff}', [StaffController::class, 'show'])->name('staff.show');
+        Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])->name('staff.destroy');
     });
     
     // Staff-only routes

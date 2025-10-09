@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         location.reload();
                     } else {
-                        alert('Failed to update status. Please try again.');
+                        alert(data.message || 'Failed to update status. Please try again.');
                     }
                 })
                 .catch(error => {

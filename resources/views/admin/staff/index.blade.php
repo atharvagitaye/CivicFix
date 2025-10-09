@@ -68,11 +68,6 @@
                                                title="View Details">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{{ route('admin.staff.edit', $staff) }}" 
-                                               class="btn btn-outline-warning btn-sm" 
-                                               title="Edit Staff">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
                                             <form method="POST" 
                                                   action="{{ route('admin.staff.destroy', $staff) }}" 
                                                   style="display: inline;"
