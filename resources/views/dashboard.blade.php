@@ -124,13 +124,16 @@
                                             <td>{{ $issue->category->name }}</td>
                                             <td>
                                                 <span class="badge 
-                                                    @if($issue->status === 'submitted') bg-primary
+                                                    @if($issue->status === 'submitted') bg-info
                                                     @elseif($issue->status === 'in_progress') bg-warning
                                                     @elseif($issue->status === 'resolved') bg-success
-                                                    @elseif($issue->status === 'closed') bg-secondary
-                                                    @else bg-info
+                                                    @else bg-secondary
                                                     @endif">
-                                                    {{ ucfirst(str_replace('_', ' ', $issue->status)) }}
+                                                    @if($issue->status === 'submitted')
+                                                        Open
+                                                    @else
+                                                        {{ ucfirst(str_replace('_', ' ', $issue->status)) }}
+                                                    @endif
                                                 </span>
                                             </td>
                                             <td>

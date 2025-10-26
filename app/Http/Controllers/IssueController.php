@@ -105,14 +105,13 @@ class IssueController extends Controller
      */
     public function show(Issue $issue)
     {
-        $issue->load(['user', 'category', 'subcategory', 'assignment.staff.user']);
+        $issue->load(['user', 'category', 'subcategory', 'assignment.staff.user', 'updates.staff.user', 'updates.status']);
         
         // Provide status options for the update form
         $statusOptions = [
-            'submitted' => 'Submitted',
+            'submitted' => 'Open',
             'in_progress' => 'In Progress', 
-            'resolved' => 'Resolved',
-            'closed' => 'Closed'
+            'resolved' => 'Resolved'
         ];
         
         return view('issues.show', compact('issue', 'statusOptions'));

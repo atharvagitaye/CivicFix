@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Issue #{{ $issue->id }} - CivicFix')
+@section('title')
+    Issue #{{ $issue->id }} - CivicFix
+@endsection
 
 @section('content')
 <div class="container-fluid py-4">
@@ -16,10 +18,13 @@
                                 @if($issue->status === 'submitted') bg-primary
                                 @elseif($issue->status === 'in_progress') bg-warning
                                 @elseif($issue->status === 'resolved') bg-success
-                                @elseif($issue->status === 'closed') bg-secondary
                                 @else bg-info
                                 @endif">
-                                {{ ucfirst(str_replace('_', ' ', $issue->status)) }}
+                                @if($issue->status === 'submitted')
+                                    Open
+                                @else
+                                    {{ ucfirst(str_replace('_', ' ', $issue->status)) }}
+                                @endif
                             </span>
                             <span class="badge 
                                 @if($issue->priority === 'urgent') bg-danger
@@ -212,13 +217,13 @@
                             </button>
                         </form>
                         
-                        @if($issue->status !== 'closed')
+                        @if($issue->status !== 'resolved')
                             <hr>
                             <form method="POST" action="{{ route('staff.issues.complete', $issue) }}">
                                 @csrf
                                 <button type="submit" class="btn btn-success w-100" 
-                                        onclick="return confirm('Are you sure you want to mark this issue as completed?')">
-                                    <i class="bi bi-check-circle"></i> Mark as Completed
+                                        onclick="return confirm('Are you sure you want to mark this issue as resolved?')">
+                                    <i class="bi bi-check-circle"></i> Mark as Resolved
                                 </button>
                             </form>
                         @endif
@@ -226,8 +231,8 @@
                 </div>
             @endif
 
-            <!-- Issue Updates -->
-            <!-- <div class="card">
+            <!-- Issue Updates / History -->
+            <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="bi bi-clock-history"></i> Update History
@@ -238,129 +243,51 @@
                         <div class="timeline">
                             @foreach($issue->updates->sortByDesc('created_at') as $update)
                                 <div class="timeline-item mb-3 pb-3 @if(!$loop->last) border-bottom @endif">
-                                    <div class="d-flex justify-content-between align-items-start">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
                                         <div>
-                                            <strong>{{ $update->staff->user->name }}</strong>
-                                            <small class="text-muted d-block">{{ $update->created_at->format('M d, Y \a\t g:i A') }}</small>
-                                        </div>
-                                        @php
-                                            // Normalize status which might be a plain string or a JSON-encoded object
-                                            $statusRaw = $update->status;
-                                            $statusLabel = null;
-                                            $statusKey = null;
-
-                                            if (!empty($statusRaw) && is_string($statusRaw)) {
-                                                $maybeStatus = json_decode($statusRaw, true);
-                                                if (json_last_error() === JSON_ERROR_NONE && is_array($maybeStatus)) {
-                                                    // prefer 'name' if present
-                                                    if (isset($maybeStatus['name'])) {
-                                                        $statusLabel = $maybeStatus['name'];
-                                                        $statusKey = strtolower(str_replace(' ', '_', $statusLabel));
-                                                    } elseif (isset($maybeStatus['status'])) {
-                                                        $statusLabel = $maybeStatus['status'];
-                                                        $statusKey = strtolower(str_replace(' ', '_', $statusLabel));
-                                                    }
-                                                }
-                                            }
-
-                                            if (!$statusLabel) {
-                                                // fallback to existing plain string handling
-                                                $statusLabel = $statusRaw;
-                                                $statusKey = is_string($statusRaw) ? $statusRaw : null;
-                                            }
-
-                                            // Ensure we have a display label
-                                            $displayLabel = $statusLabel ? ucwords(str_replace('_', ' ', $statusLabel)) : 'Unknown';
-                                        @endphp
-
-                                        <span class="badge 
-                                            @if($statusKey === 'submitted') bg-info
-                                            @elseif($statusKey === 'in_progress') bg-warning
-                                            @elseif($statusKey === 'resolved') bg-success
-                                            @elseif($statusKey === 'closed') bg-secondary
-                                            @else bg-secondary
-                                            @endif">
-                                            {{ $displayLabel }}
-                                        </span>
-                                    </div>
-                                    @php
-                                        // Robust JSON decoding: handle double-encoded JSON and various shapes
-                                        $decoded = null;
-                                        $raw = $update->update_description;
-
-                                        if (!empty($raw) && is_string($raw)) {
-                                            $maybe = json_decode($raw, true);
-                                            if (json_last_error() === JSON_ERROR_NONE) {
-                                                $decoded = $maybe;
-                                                // handle double-encoded values (strings that are JSON themselves)
-                                                if (is_string($decoded)) {
-                                                    $inner = json_decode($decoded, true);
-                                                    if (json_last_error() === JSON_ERROR_NONE) {
-                                                        $decoded = $inner;
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        // Helper to detect associative arrays
-                                        $isAssoc = function($arr) {
-                                            if (!is_array($arr)) return false;
-                                            return array_keys($arr) !== range(0, count($arr) - 1);
-                                        };
-                                    @endphp
-
-                                    @if($decoded)
-                                        <div class="mt-2 mb-0">
-                                            @if(is_array($decoded) && isset($decoded['notes']))
-                                                <p>{{ $decoded['notes'] }}</p>
-                                            @elseif(is_array($decoded) && isset($decoded['name']))
-                                                <p><strong>Status changed to:</strong> {{ $decoded['name'] }}</p>
-                                                @if(!empty($decoded['description']))
-                                                    <p class="text-muted small">{{ $decoded['description'] }}</p>
+                                            <strong>
+                                                @if($update->staff && $update->staff->user)
+                                                    {{ $update->staff->user->name }}
+                                                @else
+                                                    <span class="text-muted">Staff Member</span>
                                                 @endif
-                                            @elseif(is_array($decoded) && $isAssoc($decoded))
-                                                <div class="alert alert-info small mb-0">
-                                                    @foreach($decoded as $key => $value)
-                                                        @if(is_scalar($value))
-                                                            <strong>{{ ucwords(str_replace(['_', "\n"], [' ', ' '], $key)) }}:</strong> {{ $value }}<br>
-                                                        @elseif(is_array($value))
-                                                            <strong>{{ ucwords(str_replace(['_', "\n"], [' ', ' '], $key)) }}:</strong>
-                                                            <pre class="mb-0 small">{{ json_encode($value, JSON_PRETTY_PRINT) }}</pre>
-                                                        @endif
-                                                    @endforeach
-                                                </div>
-                                            @elseif(is_array($decoded))
-                                                {{-- indexed array - list items --}}
-                                                <ul class="small mb-0">
-                                                    @foreach($decoded as $item)
-                                                        <li>
-                                                            @if(is_scalar($item))
-                                                                {{ $item }}
-                                                            @else
-                                                                <pre class="mb-0 small">{{ json_encode($item, JSON_PRETTY_PRINT) }}</pre>
-                                                            @endif
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            @else
-                                                {{-- fallback: pretty-print whatever we decoded --}}
-                                                <pre class="mb-0 small">{{ json_encode($decoded, JSON_PRETTY_PRINT) }}</pre>
-                                            @endif
+                                            </strong>
+                                            <small class="text-muted d-block">
+                                                {{ $update->created_at->format('M d, Y \a\t g:i A') }}
+                                            </small>
                                         </div>
-                                    @else
-                                        <p class="mt-2 mb-0">{{ $update->update_description }}</p>
+                                        @if($update->status)
+                                            @php
+                                                $statusName = strtolower($update->status->name ?? '');
+                                                $statusDisplay = $update->status->name ?? 'Unknown';
+                                            @endphp
+                                            <span class="badge 
+                                                @if(str_contains($statusName, 'open')) bg-primary
+                                                @elseif(str_contains($statusName, 'progress')) bg-warning
+                                                @elseif(str_contains($statusName, 'resolved')) bg-success
+                                                @else bg-info
+                                                @endif">
+                                                {{ $statusDisplay }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    @if($update->update_description)
+                                        <div class="mt-2">
+                                            <p class="mb-0 text-dark">{{ $update->update_description }}</p>
+                                        </div>
                                     @endif
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <div class="text-center py-3">
+                        <div class="text-center py-4">
                             <i class="bi bi-clock fs-1 text-muted"></i>
-                            <p class="text-muted mt-2">No updates yet</p>
+                            <p class="text-muted mt-2 mb-0">No updates yet</p>
+                            <small class="text-muted">Updates will appear here when staff members work on this issue.</small>
                         </div>
                     @endif
                 </div>
-            </div> -->
+            </div>
         </div>
     </div>
 </div>

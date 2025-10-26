@@ -28,10 +28,9 @@
                                 <label class="form-label">Status</label>
                                 <select name="status" class="form-select">
                                     <option value="">All Statuses</option>
-                                    <option value="submitted" {{ request('status') == 'submitted' ? 'selected' : '' }}>Submitted</option>
+                                    <option value="submitted" {{ request('status') == 'submitted' ? 'selected' : '' }}>Open</option>
                                     <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
                                     <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>Resolved</option>
-                                    <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Closed</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -133,12 +132,15 @@
                                                     $statusColors = [
                                                         'submitted' => 'primary',
                                                         'in_progress' => 'warning',
-                                                        'resolved' => 'success',
-                                                        'closed' => 'secondary'
+                                                        'resolved' => 'success'
                                                     ];
                                                 @endphp
                                                 <span class="badge bg-{{ $statusColors[$issue->status] ?? 'secondary' }}">
-                                                    {{ ucwords(str_replace('_', ' ', $issue->status)) }}
+                                                    @if($issue->status === 'submitted')
+                                                        Open
+                                                    @else
+                                                        {{ ucwords(str_replace('_', ' ', $issue->status)) }}
+                                                    @endif
                                                 </span>
                                             </td>
                                             <td>
@@ -186,7 +188,7 @@
                                                             <li><a class="dropdown-item" href="{{ route('issues.show', $issue) }}">
                                                                 <i class="bi bi-eye"></i> View Details
                                                             </a></li>
-                                                            @if($issue->status != 'closed')
+                                                            @if($issue->status != 'resolved')
                                                                 <li><hr class="dropdown-divider"></li>
                                                                 <li><a class="dropdown-item update-status" 
                                                                        href="#" 
@@ -303,12 +305,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const issueId = this.dataset.issueId;
             const currentStatus = this.dataset.currentStatus;
             
-            const statusOptions = ['submitted', 'in_progress', 'resolved', 'closed'];
+            const statusOptions = ['submitted', 'in_progress', 'resolved'];
             const statusLabels = {
-                'submitted': 'Submitted',
+                'submitted': 'Open',
                 'in_progress': 'In Progress', 
-                'resolved': 'Resolved',
-                'closed': 'Closed'
+                'resolved': 'Resolved'
             };
             
             let options = statusOptions

@@ -15,6 +15,7 @@ use App\Http\Controllers\Staff\StaffController as StaffStaffController;
 use App\Http\Controllers\HomeController;
 
 // Public routes
+Route::get('/welcome', [HomeController::class, 'showWelcome']);
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Authentication routes

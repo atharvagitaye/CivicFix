@@ -84,24 +84,73 @@ class AdminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'staff_id' => 'required|exists:staff,id',
+            'assignment_notes' => 'nullable|string|max:500',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         if ($validator->fails()) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
 
-        // Create assignment record (no need to update issue table)
-        IssueAssignment::create([
-            'issue_id' => $issue->id,
-            'staff_id' => $request->staff_id,
-            'assigned_by' => Auth::user()->admin->id,
-            'assigned_at' => now(),
-        ]);
+        try {
+            // Check if issue is already assigned
+            if ($issue->assignment) {
+                // Update existing assignment
+                $issue->assignment->update([
+                    'staff_id' => $request->staff_id,
+                    'assigned_by' => Auth::user()->admin->id,
+                    'assigned_at' => now(),
+                ]);
+                
+                $message = 'Issue re-assigned successfully!';
+            } else {
+                // Create new assignment record
+                IssueAssignment::create([
+                    'issue_id' => $issue->id,
+                    'staff_id' => $request->staff_id,
+                    'assigned_by' => Auth::user()->admin->id,
+                    'assigned_at' => now(),
+                ]);
+                
+                $message = 'Issue assigned successfully!';
+            }
 
-        return redirect()->route('admin.issues.index')
-            ->with('success', 'Issue assigned successfully!');
+            // Return JSON response for AJAX requests
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message
+                ]);
+            }
+
+            // Return redirect for normal form submissions
+            return redirect()->route('admin.issues.index')
+                ->with('success', $message);
+                
+        } catch (\Exception $e) {
+            \Log::error('Assignment failed: ' . $e->getMessage());
+            
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to assign issue. Please try again.'
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->with('error', 'Failed to assign issue. Please try again.')
+                ->withInput();
+        }
     }
 
     /**

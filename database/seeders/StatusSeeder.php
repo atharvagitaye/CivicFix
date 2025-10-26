@@ -16,23 +16,15 @@ class StatusSeeder extends Seeder
         $statuses = [
             [
                 'name' => 'Open',
-                'description' => 'Issue has been reported and is awaiting assignment'
+                'description' => 'Issue has been reported and is awaiting assignment or work'
             ],
             [
                 'name' => 'In Progress',
                 'description' => 'Issue is currently being worked on by staff'
             ],
             [
-                'name' => 'Closed',
-                'description' => 'Issue has been resolved and completed'
-            ],
-            [
-                'name' => 'On Hold',
-                'description' => 'Issue work has been temporarily suspended'
-            ],
-            [
-                'name' => 'Rejected',
-                'description' => 'Issue was reviewed and determined to be invalid or duplicate'
+                'name' => 'Resolved',
+                'description' => 'Issue has been fixed and completed'
             ]
         ];
 

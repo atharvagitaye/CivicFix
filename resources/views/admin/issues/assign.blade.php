@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Assign Issue #{{ $issue->id }} - Admin Panel')
+@section('title')
+    Assign Issue #{{ $issue->id }} - Admin Panel
+@endsection
 
 @section('content')
 <div class="container-fluid py-4">

@@ -86,10 +86,13 @@
                                                     @if($issue->status === 'submitted') bg-info
                                                     @elseif($issue->status === 'in_progress') bg-warning
                                                     @elseif($issue->status === 'resolved') bg-success
-                                                    @elseif($issue->status === 'closed') bg-secondary
                                                     @else bg-secondary
                                                     @endif">
-                                                    {{ ucwords(str_replace('_', ' ', $issue->status)) }}
+                                                    @if($issue->status === 'submitted')
+                                                        Open
+                                                    @else
+                                                        {{ ucfirst(str_replace('_', ' ', $issue->status)) }}
+                                                    @endif
                                                 </span>
                                             </td>
                                             @if(Auth::user()->isAdmin())

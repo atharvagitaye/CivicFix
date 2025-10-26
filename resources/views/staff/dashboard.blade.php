@@ -121,13 +121,16 @@
                                             </td>
                                             <td>
                                                 <span class="badge 
-                                                    @if($issue->status === 'submitted') bg-info
+                                                    @if($issue->status === 'submitted') bg-primary
                                                     @elseif($issue->status === 'in_progress') bg-warning
                                                     @elseif($issue->status === 'resolved') bg-success
-                                                    @elseif($issue->status === 'closed') bg-secondary
-                                                    @else bg-secondary
+                                                    @else bg-info
                                                     @endif">
-                                                    {{ ucwords(str_replace('_', ' ', $issue->status)) }}
+                                                    @if($issue->status === 'submitted')
+                                                        Open
+                                                    @else
+                                                        {{ ucfirst(str_replace('_', ' ', $issue->status)) }}
+                                                    @endif
                                                 </span>
                                             </td>
                                             <td>{{ $issue->created_at->format('M d, Y') }}</td>
@@ -137,7 +140,7 @@
                                                        class="btn btn-outline-primary btn-sm">
                                                         <i class="bi bi-eye"></i> View
                                                     </a>
-                                                    @if($issue->status !== 'closed')
+                                                    @if($issue->status !== 'resolved')
                                                         <button type="button" 
                                                                 class="btn btn-outline-success btn-sm"
                                                                 onclick="completeIssue({{ $issue->id }})">
@@ -221,7 +224,7 @@
                     <p>Are you sure you want to mark this issue as completed?</p>
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i> 
-                        This will change the issue status to "Closed" and notify the reporter.
+                        This will change the issue status to "Resolved" and notify the reporter.
                     </div>
                 </div>
                 <div class="modal-footer">

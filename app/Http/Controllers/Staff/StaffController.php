@@ -98,10 +98,9 @@ class StaffController extends Controller
 
         // Provide status options for the update form
         $statusOptions = [
-            'submitted' => 'Submitted',
+            'submitted' => 'Open',
             'in_progress' => 'In Progress', 
-            'resolved' => 'Resolved',
-            'closed' => 'Closed'
+            'resolved' => 'Resolved'
         ];
 
         return view('issues.show', compact('issue', 'statusOptions'));
@@ -125,7 +124,7 @@ class StaffController extends Controller
         }
 
         $validator = Validator::make($input, [
-            'status' => 'required|in:submitted,in_progress,resolved,closed',
+            'status' => 'required|in:submitted,in_progress,resolved',
             'update_description' => 'required|string|min:10',
         ]);
 
@@ -143,8 +142,7 @@ class StaffController extends Controller
         $statusMapping = [
             'submitted' => 1,  // Open
             'in_progress' => 2, // In Progress
-            'resolved' => 3,    // Closed/Resolved
-            'closed' => 3,      // Closed
+            'resolved' => 3,    // Resolved
         ];
 
         // Create an issue update record
@@ -181,7 +179,6 @@ class StaffController extends Controller
             'submitted' => 1,
             'in_progress' => 2,
             'resolved' => 3,
-            'closed' => 3,
         ];
 
         IssueUpdate::create([

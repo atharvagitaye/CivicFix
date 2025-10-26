@@ -45,7 +45,7 @@
         }
         .status-open { color: #e74c3c; }
         .status-in-progress { color: #f39c12; }
-        .status-closed { color: #27ae60; }
+        .status-resolved { color: #27ae60; }
         .priority-high { color: #e74c3c; font-weight: bold; }
         .priority-medium { color: #f39c12; }
         .priority-low { color: #27ae60; }

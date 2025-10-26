@@ -101,7 +101,7 @@ class Issue extends Model
      */
     public static function getStatusLevels(): array
     {
-        return ['submitted', 'in_progress', 'resolved', 'closed'];
+        return ['submitted', 'in_progress', 'resolved'];
     }
 
     /**

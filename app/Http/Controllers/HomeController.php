@@ -7,7 +7,10 @@ use App\Models\Issue;
 use App\Models\Category;
 
 class HomeController extends Controller
-{
+{   
+    public function showWelcome() {
+        return view('welcome');
+    }
     /**
      * Show the application home page.
      */

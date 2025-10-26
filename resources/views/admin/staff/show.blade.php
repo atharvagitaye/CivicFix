@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Staff Details: {{ $staff->user->name }} - Admin Panel')
+@section('title')
+    Staff Details: {{ $staff->user->name }} - Admin Panel
+@endsection
 
 @section('content')
 <div class="container-fluid py-4">

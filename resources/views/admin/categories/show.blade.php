@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Category Details: {{ $category->name }} - Admin Panel')
+@section('title')
+    Category Details: {{ $category->name }} - Admin Panel
+@endsection
 
 @section('content')
 <div class="container-fluid py-4">
